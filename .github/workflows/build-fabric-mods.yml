@@ -1,0 +1,42 @@
+name: Build SHADOW VISUALS Fabric mods
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "FabricMod/**"
+      - ".github/workflows/build-fabric-mods.yml"
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.14.3"
+      - name: Build all supported versions
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release-assets
+          for version in 1.21.1 1.21.4 1.21.11; do
+            gradle -p "FabricMod/${version}" clean build --no-daemon
+            jar="FabricMod/${version}/build/libs/shadow-visuals-menu-${version}-1.0.0.jar"
+            test -f "$jar"
+            cp "$jar" "release-assets/shadow-visuals-menu-${version}.jar"
+          done
+      - name: Publish rolling release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: fabric-mods-latest
+          name: SHADOW VISUALS Fabric Mods (latest)
+          prerelease: true
+          make_latest: false
+          overwrite_files: true
+          files: release-assets/*.jar
