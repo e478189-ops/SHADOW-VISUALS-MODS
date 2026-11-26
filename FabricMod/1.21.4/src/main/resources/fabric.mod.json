@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "shadowvisuals_menu",
+  "version": "${version}",
+  "name": "SHADOW VISUALS Menu",
+  "description": "Статичный фон главного меню SHADOW VISUALS. Не изменяет звуки Minecraft.",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "ru.shadowvisuals.menu.ShadowVisualsMenuClient"
+    ]
+  },
+  "mixins": [
+    "shadowvisuals-menu.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "=1.21.4",
+    "java": ">=21"
+  }
+}
