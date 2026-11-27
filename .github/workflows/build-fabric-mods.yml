@@ -1,4 +1,5 @@
 name: Build SHADOW VISUALS Fabric mods
+
 on:
   workflow_dispatch:
   push:
@@ -6,13 +7,22 @@ on:
     paths:
       - "FabricMod/**"
       - ".github/workflows/build-fabric-mods.yml"
+
 permissions:
   contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Restore versioned Fabric source bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          base64 --decode FabricMod/SHADOW-VISUALS-MOD-SOURCE-1.1.0.zip.b64 > /tmp/shadow-visuals-mod-source.zip
+          unzip -t /tmp/shadow-visuals-mod-source.zip
+          unzip -o /tmp/shadow-visuals-mod-source.zip -d .
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -27,15 +37,17 @@ jobs:
           mkdir -p release-assets
           for version in 1.21.1 1.21.4 1.21.11; do
             gradle -p "FabricMod/${version}" clean build --no-daemon
-            jar="FabricMod/${version}/build/libs/shadow-visuals-menu-${version}-1.0.0.jar"
-            test -f "$jar"
+            jar="FabricMod/${version}/build/libs/shadow-visuals-menu-${version}-1.1.0.jar"
+            test -s "$jar"
+            unzip -t "$jar"
+            unzip -p "$jar" fabric.mod.json | grep -Eq '"version"[[:space:]]*:[[:space:]]*"1\.1\.0"'
             cp "$jar" "release-assets/shadow-visuals-menu-${version}.jar"
           done
       - name: Publish rolling release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: fabric-mods-latest
-          name: SHADOW VISUALS Fabric Mods (latest)
+          name: SHADOW VISUALS Fabric Mods 1.1.0
           prerelease: true
           make_latest: false
           overwrite_files: true
