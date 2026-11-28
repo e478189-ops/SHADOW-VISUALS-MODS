@@ -1,0 +1,46 @@
+name: Verify SHADOW VISUALS client panel
+on:
+  push:
+    branches:
+      - sv-panel-launcher-fix-20261128
+    paths:
+      - "FabricMod/**"
+      - ".github/workflows/build-sv-panel-check.yml"
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - minecraft: "1.21.1"
+            gradle: "8.14.3"
+          - minecraft: "1.21.4"
+            gradle: "8.14.3"
+          - minecraft: "1.21.11"
+            gradle: "9.2.1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: ${{ matrix.gradle }}
+      - name: Build panel for Minecraft ${{ matrix.minecraft }}
+        run: gradle -p "FabricMod/${{ matrix.minecraft }}" clean build --no-daemon --stacktrace
+      - name: Verify mod archive
+        shell: bash
+        run: |
+          jar="FabricMod/${{ matrix.minecraft }}/build/libs/shadow-visuals-menu-${{ matrix.minecraft }}-2.0.0.jar"
+          test -f "$jar"
+          unzip -l "$jar"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: shadow-visuals-${{ matrix.minecraft }}
+          path: FabricMod/${{ matrix.minecraft }}/build/libs/shadow-visuals-menu-${{ matrix.minecraft }}-2.0.0.jar
+          if-no-files-found: error
+          retention-days: 7

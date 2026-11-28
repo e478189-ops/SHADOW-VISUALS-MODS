@@ -4,7 +4,9 @@
   "package": "ru.shadowvisuals.menu.mixin",
   "compatibilityLevel": "JAVA_21",
   "client": [
-    "TitleScreenMixin"
+    "MinecraftClientMixin",
+    "SkyRenderingMixin",
+    "InGameHudMixin"
   ],
   "injectors": {
     "defaultRequire": 1
